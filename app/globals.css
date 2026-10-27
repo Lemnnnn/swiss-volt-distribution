@@ -6,6 +6,9 @@
 
 @theme inline {
     --font-heading: var(--font-sans);
+    --color-volt: var(--volt);
+    --color-ink: var(--ink);
+    --color-line: var(--line);
     --font-sans: var(--font-sans);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -48,6 +51,12 @@
 }
 
 :root {
+    --ink: oklch(0.13 0.008 250);
+    --ink-2: oklch(0.17 0.01 250);
+    --volt: oklch(0.92 0.2 112);
+    --line: oklch(1 0 0 / 11%);
+    --scene-dim: oklch(1 0 0 / 22%);
+    --scene-lit: oklch(0.92 0.2 112);
     --background: oklch(1 0 0);
     --foreground: oklch(0.153 0.006 107.1);
     --card: oklch(1 0 0);
@@ -83,8 +92,8 @@
 }
 
 .dark {
-    --background: oklch(0.153 0.006 107.1);
-    --foreground: oklch(0.988 0.003 106.5);
+    --background: var(--ink);
+    --foreground: oklch(0.94 0.008 95);
     --card: oklch(0.228 0.013 107.4);
     --card-foreground: oklch(0.988 0.003 106.5);
     --popover: oklch(0.228 0.013 107.4);
@@ -94,7 +103,7 @@
     --secondary: oklch(0.286 0.016 107.4);
     --secondary-foreground: oklch(0.988 0.003 106.5);
     --muted: oklch(0.286 0.016 107.4);
-    --muted-foreground: oklch(0.737 0.021 106.9);
+    --muted-foreground: oklch(0.68 0.01 250);
     --accent: oklch(0.286 0.016 107.4);
     --accent-foreground: oklch(0.988 0.003 106.5);
     --destructive: oklch(0.704 0.191 22.216);
@@ -126,4 +135,361 @@
   html {
     @apply font-sans;
     }
+}
+
+/* ---------- SwissVolt ---------- */
+
+.font-wide {
+  font-stretch: 125%;
+}
+
+html {
+  color-scheme: dark;
+  scrollbar-color: oklch(1 0 0 / 20%) var(--ink);
+}
+
+::selection {
+  background: var(--volt);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--volt);
+  outline-offset: 3px;
+}
+
+/* Power line scenes */
+.energy .stage {
+  fill: none;
+  stroke: var(--scene-dim);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.9s ease;
+}
+
+.energy .stage * {
+  vector-effect: non-scaling-stroke;
+}
+
+.energy .stage .panel-fill {
+  fill: transparent;
+  transition: fill 0.9s ease;
+}
+
+.energy .stage text {
+  stroke: none;
+  fill: var(--scene-dim);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.18em;
+  transition: fill 0.9s ease;
+}
+
+.energy .stage.is-lit {
+  stroke: color-mix(in oklch, var(--scene-lit) 85%, white);
+}
+
+.energy .stage.is-lit .panel-fill {
+  fill: color-mix(in oklch, var(--scene-lit) 22%, transparent);
+  transition-delay: 0.35s;
+}
+
+.energy .stage.is-lit text {
+  fill: var(--scene-lit);
+}
+
+.energy .stage .fine {
+  stroke-width: 1.25;
+  opacity: 0.65;
+}
+
+/* Scenes shrink a lot on phones; keep the detail from clogging up. */
+@media (max-width: 640px) {
+  .energy .stage {
+    stroke-width: 1.25;
+  }
+
+  .energy .stage .fine {
+    stroke-width: 0.75;
+  }
+}
+
+/* Ambient motion, only once a scene is powered */
+.energy .stage .beacon {
+  fill: transparent;
+  stroke: none;
+}
+
+.energy .stage .smoke {
+  opacity: 0;
+}
+
+.energy .stage.is-lit .beacon {
+  fill: var(--scene-lit);
+  animation: beacon 2.4s steps(1) infinite;
+}
+
+.energy .stage.is-lit .smoke circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: smoke 4.5s ease-out infinite;
+}
+
+.energy .stage.is-lit .smoke {
+  opacity: 0.6;
+  transition: opacity 1.2s ease 0.8s;
+}
+
+.energy .stage.is-lit .smoke circle:nth-child(2) {
+  animation-delay: -1.5s;
+}
+
+.energy .stage.is-lit .smoke circle:nth-child(3) {
+  animation-delay: -3s;
+}
+
+.energy .stage.is-lit .sea {
+  animation: sea 3s linear infinite;
+}
+
+.energy .stage.is-lit .sea-slow {
+  animation-duration: 5s;
+}
+
+@keyframes beacon {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes smoke {
+  from {
+    opacity: 0.9;
+    transform: translate(0, 0) scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: translate(18px, -46px) scale(1.8);
+  }
+}
+
+@keyframes sea {
+  to {
+    transform: translateX(-60px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .energy .stage.is-lit * {
+    animation: none !important;
+  }
+}
+
+.cta-power {
+  border-color: color-mix(in oklch, var(--volt) 40%, transparent);
+  color: var(--volt);
+  transition:
+    background-color 0.6s ease,
+    color 0.6s ease,
+    box-shadow 0.6s ease,
+    transform 0.3s ease;
+}
+
+.cta-power.is-powered {
+  background-color: var(--volt);
+  color: var(--ink);
+  box-shadow: 0 0 48px -6px var(--volt);
+}
+
+.cta-power:hover {
+  transform: scale(1.03);
+}
+
+/* Globe hover label (rendered by globe.gl's tooltip) */
+.globe-label {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--ink) 92%, transparent);
+  color: var(--foreground);
+  font: 500 13px/1.3 var(--font-sans);
+}
+
+.globe-label span {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+/* Pinned names on the hero globe: a dot, a leader and an offset label */
+.globe-tag {
+  width: 0;
+  height: 0;
+  color: oklch(1 0 0 / 88%);
+  pointer-events: none;
+}
+
+.globe-tag.market,
+.globe-tag.hub {
+  color: var(--volt);
+}
+
+.globe-tag svg {
+  position: absolute;
+  overflow: visible;
+  width: 1px;
+  height: 1px;
+}
+
+.globe-tag path {
+  fill: none;
+  stroke: currentColor;
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+
+.globe-tag::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.globe-tag span {
+  position: absolute;
+  translate: 0 -50%;
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: color-mix(in oklch, var(--ink) 80%, transparent);
+  font: 500 10px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.globe-tag.market span {
+  color: oklch(1 0 0 / 88%);
+}
+
+.globe-tag i {
+  display: inline-block;
+  min-width: 2ch;
+  margin-right: 0.9em;
+  font-style: normal;
+  color: var(--volt);
+  opacity: 0.7;
+}
+
+.globe-tag em {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8em;
+  font-style: normal;
+  color: var(--muted-foreground);
+}
+
+.globe-tag.hub em {
+  display: inline;
+  margin: 0 0 0 0.9em;
+}
+
+.globe-tag.heading::before,
+.globe-tag.heading svg {
+  display: none;
+}
+
+.globe-tag.heading span {
+  padding-inline: 0;
+  background: none;
+  color: var(--muted-foreground);
+  font-size: 9px;
+}
+
+@media (min-width: 1024px) {
+  .globe-tag span {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .globe-tag.source span {
+    padding: 9px 12px;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+  }
+
+  .globe-tag.heading span {
+    padding-inline: 0;
+    font-size: 10px;
+  }
+}
+
+/* Hero globe: keep the route in focus and let the rest of the sphere dissolve.
+   A static overlay instead of mask-image, so the live canvas is not re-masked every frame. */
+.globe-fade {
+  background: radial-gradient(ellipse 75% 60% at 50% 45%, transparent 40%, var(--ink) 100%);
+}
+
+@media (min-width: 1024px) {
+  .globe-fade {
+    background: radial-gradient(ellipse 50% 72% at 70% 50%, transparent 50%, var(--ink) 100%);
+  }
+}
+
+/* Founder portrait: the photo is cropped at the bottom and right, so fade both edges */
+.portrait-arch {
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+/* Founders: lit by the power line as it runs along the rule under the intro */
+.team-glow .portrait-arch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 0%,
+    color-mix(in oklch, var(--volt) 22%, transparent),
+    transparent 75%
+  );
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--volt) 50%, transparent);
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.team-glow .portrait-fade {
+  transition: filter 1.4s ease 0.2s;
+}
+
+.team-glow .team-role {
+  transition: color 0.9s ease 0.4s;
+}
+
+.team-glow.is-lit .portrait-arch::after {
+  opacity: 1;
+}
+
+.team-glow.is-lit .portrait-fade {
+  filter: drop-shadow(0 0 28px color-mix(in oklch, var(--volt) 18%, transparent));
+}
+
+.team-glow.is-lit .team-role {
+  color: var(--volt);
+}
+
+.portrait-fade {
+  mask-image:
+    linear-gradient(to bottom, #000 66%, transparent),
+    linear-gradient(to right, transparent, #000 8%, #000 86%, transparent);
+  mask-composite: intersect;
 }
