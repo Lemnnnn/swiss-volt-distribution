@@ -18,10 +18,26 @@ const fontMono = JetBrains_Mono({
   variable: "--font-mono",
 })
 
+const title = "SwissVolt Distribution | Solar Panels, Energy Storage & More"
+const description =
+  "Central & Eastern European importer and distributor of renewable energy infrastructure, connecting leading Asian manufacturers with European B2B markets."
+
 export const metadata: Metadata = {
-  title: "SwissVolt Distribution | Solar Panels, Energy Storage & More",
-  description:
-    "Central & Eastern European importer and distributor of renewable energy infrastructure, connecting leading Asian manufacturers with European B2B markets.",
+  // Link previews need absolute URLs; app/opengraph-image.tsx supplies the image.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://swissvolt-distribution.com"
+  ),
+  title,
+  description,
+  openGraph: {
+    type: "website",
+    siteName: "SwissVolt Distribution",
+    locale: "en",
+    url: "/",
+    title,
+    description,
+  },
+  twitter: { card: "summary_large_image", title, description },
 }
 
 export default function RootLayout({
@@ -33,7 +49,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", archivo.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        archivo.variable
+      )}
     >
       {/* Browser extensions inject attributes on <body>; ignore those mismatches. */}
       <body suppressHydrationWarning>
