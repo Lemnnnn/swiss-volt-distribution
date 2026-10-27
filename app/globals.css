@@ -311,23 +311,6 @@ html {
   transform: scale(1.03);
 }
 
-/* Globe hover label (rendered by globe.gl's tooltip) */
-.globe-label {
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: color-mix(in oklch, var(--ink) 92%, transparent);
-  color: var(--foreground);
-  font: 500 13px/1.3 var(--font-sans);
-}
-
-.globe-label span {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-
 /* Pinned names on the hero globe: a dot, a leader and an offset label */
 .globe-tag {
   width: 0;

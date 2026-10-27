@@ -76,7 +76,11 @@ const HOME_VIEW = { lat: 60, lng: 90, altitude: 1.6 }
 const VOLT = "#e9f01a"
 
 type Arc = { startLat: number; startLng: number; endLat: number; endLng: number; inbound: boolean }
-type Country = { id: string; properties: { name: string } }
+type Country = {
+  id: string
+  properties: { name: string }
+  geometry: { type: "Polygon" | "MultiPolygon"; coordinates: number[][][] | number[][][][] }
+}
 
 const ARCS: Arc[] = [
   ...ORIGINS.map((o) => ({ startLat: o.lat, startLng: o.lng, endLat: HUB.lat, endLng: HUB.lng, inbound: true })),
@@ -115,9 +119,27 @@ function ReachGlobe({ frameClassName }: { frameClassName: string }) {
       if (disposed) return
 
       const world = topology as unknown as Topology<{ countries: GeometryCollection }>
-      const countries = (
-        feature(world, world.objects.countries) as unknown as { features: Country[] }
-      ).features.filter((c) => !BROKEN_SHAPES.includes(c.id))
+      const all = (feature(world, world.objects.countries) as unknown as { features: Country[] }).features.filter(
+        (c) => !BROKEN_SHAPES.includes(c.id)
+      )
+      // Each hex polygon is its own mesh (one draw call), so every country that
+      // isn't highlighted is folded into a single shape: ~170 draw calls become one.
+      const highlighted = all.filter((c) => MARKETS.includes(c.id) || SOURCES.includes(c.id))
+      const rest: Country = {
+        id: "rest",
+        properties: { name: "" },
+        geometry: {
+          type: "MultiPolygon",
+          coordinates: all
+            .filter((c) => !highlighted.includes(c))
+            .flatMap((c) =>
+              c.geometry.type === "Polygon"
+                ? [c.geometry.coordinates as number[][][]]
+                : (c.geometry.coordinates as number[][][][])
+            ),
+        },
+      }
+      const countries = [...highlighted, rest]
 
       const role = (d: object) => {
         const id = (d as Country).id
@@ -149,14 +171,11 @@ function ReachGlobe({ frameClassName }: { frameClassName: string }) {
         .hexPolygonMargin((d) => (role(d) ? 0.35 : 0.5))
         .hexPolygonAltitude((d) => (role(d) ? 0.006 : 0.001))
         .hexPolygonUseDots(true)
+        // Hexagonal dots: a third of the triangles of the default 12-gon, same look at this size.
+        .hexPolygonDotResolution(6)
         .hexPolygonColor((d) =>
           role(d) === "market" ? VOLT : role(d) === "source" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.08)"
         )
-        .hexPolygonLabel((d) => {
-          const r = role(d)
-          if (!r) return ""
-          return `<div class="globe-label"><span>${r === "market" ? "Market" : "Manufacturing"}</span>${(d as Country).properties.name}</div>`
-        })
         .arcsData(ARCS)
         .arcColor((d: object) =>
           (d as Arc).inbound ? ["rgba(255,255,255,0.12)", VOLT] : [VOLT, "rgba(233,240,26,0.25)"]
@@ -203,6 +222,9 @@ function ReachGlobe({ frameClassName }: { frameClassName: string }) {
           callouts.set(tag, { path, label })
           return node
         })
+        // Countries are named by pinned labels, so skip hover raycasting
+        // against every dot on each pointer move (dragging still works).
+        .enablePointerInteraction(false)
         .pointOfView(HOME_VIEW)
 
       // Keep the hub marker (the power line's origin) pinned to Bucharest.
@@ -266,7 +288,7 @@ function ReachGlobe({ frameClassName }: { frameClassName: string }) {
       controls.addEventListener("change", placeHub)
       controls.addEventListener("end", onEnd)
 
-      globe.renderer().setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+      globe.renderer().setPixelRatio(Math.min(window.devicePixelRatio, 1.25))
 
       // Size the canvas to the visible slice of the frame and crop the camera.
       // globe.gl resets the camera aspect on its own (deferred) resize, so the
