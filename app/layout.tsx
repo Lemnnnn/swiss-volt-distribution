@@ -18,15 +18,22 @@ const fontMono = JetBrains_Mono({
   variable: "--font-mono",
 })
 
+// Where this build is served: an explicit NEXT_PUBLIC_SITE_URL, else the
+// project's production domain on Vercel, else localhost. Pointing at a domain
+// that doesn't serve this app breaks link previews (no image found).
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000")
+
 const title = "SwissVolt Distribution | Solar Panels, Energy Storage & More"
 const description =
   "Central & Eastern European importer and distributor of renewable energy infrastructure, connecting leading Asian manufacturers with European B2B markets."
 
 export const metadata: Metadata = {
   // Link previews need absolute URLs; app/opengraph-image.tsx supplies the image.
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://swissvolt-distribution.com"
-  ),
+  metadataBase: new URL(siteUrl),
   title,
   description,
   openGraph: {
